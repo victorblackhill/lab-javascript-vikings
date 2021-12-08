@@ -16,7 +16,6 @@ class Soldier {
 // Viking
 class Viking extends Soldier {
   constructor(name, health, strength) {
-
     //health and rest are inherited from the soldier class
     super(health, strength);
 
@@ -27,18 +26,13 @@ class Viking extends Soldier {
   //No need to re-implement the attack, it is inherited
 
   receiveDamage(damage) {
-    
-    //I would like to use the method of the parenting class soldier but can't apparently
-    /*
-    this.Soldier.receiveDamage(damage);
-    console.log(this.Soldier.receiveDamage(damage),"viking")
-    */
-
-    this.health += -damage;
+    //call the parent method
+    super.receiveDamage(damage);
 
     if (this.health > 0) {
       return `${this.name} has received ${damage} points of damage`;
-    } else {return `${this.name} has died in act of combat`;
+    } else {
+      return `${this.name} has died in act of combat`;
     }
   }
 
@@ -49,99 +43,89 @@ class Viking extends Soldier {
 
 // Saxon
 class Saxon extends Soldier {
-
-
   //constructor inherited from soldier, no need to reimplement it
 
-  receiveDamage(damage){
+  receiveDamage(damage) {
     this.health += -damage;
-    return this.health > 0 ? `A Saxon has received ${damage} points of damage` :`A Saxon has died in combat` 
+    return this.health > 0
+      ? `A Saxon has received ${damage} points of damage`
+      : `A Saxon has died in combat`;
   }
-
 }
 
 // a function that will help me pick random soldiers from one army or the other
-function randomSoldier (list){
-
-  randIndex = Math.floor(Math.random() * list.length) ;
+function randomSoldier(list) {
+  randIndex = Math.floor(Math.random() * list.length);
   //console.log(typeof list, randIndex,list.length)
   //console.log(list[randIndex])
   return list[randIndex];
 }
 
 // a function that will remove the dead soldiers from an army
-/*
-function removeDead(army){
-  console.log("before", army);
- 
-  army = army.filter(x => {x.health>=0})
-  console.log("after",army)
-  return army
-  
+
+function removeDead(army) {
+  return army.filter((x) => x.health > 0);
 }
-*/
+
+function attack(defendingArmy, attackingArmy) {
+  //an attack is only possible with both armies having soldiers
+  if (attackingArmy.length > 0 && defendingArmy.length > 0) {
+    //an attack is
+
+    // a random soldier from the defending army
+    let damaged = randomSoldier(defendingArmy);
+
+    //receiving an attack from a random soldier of the attacking
+    let attacker = randomSoldier(attackingArmy);
+
+    //we keep the result and return it
+    let result = damaged.receiveDamage(attacker.strength);
+
+    return result;
+  }
+}
 
 // War
 class War {
-  
-  constructor(){
-    this.vikingArmy = [],
-    this.saxonArmy = []
+  constructor() {
+    (this.vikingArmy = []), (this.saxonArmy = []);
   }
-  
 
   //The methods of the Class War
-  addViking(viking){
+  addViking(viking) {
     this.vikingArmy.push(viking);
-  };
-  addSaxon(saxon){
+  }
+  addSaxon(saxon) {
     this.saxonArmy.push(saxon);
-  };
-  vikingAttack(){
-    if(this.vikingArmy.length > 0 && this.saxonArmy.length > 0){
-    //a viking attach is a random soldier from the saxon army
-    let damaged = randomSoldier(this.saxonArmy)
-    //receiving an attack from a random soldier of the viking army
-    let attacker = randomSoldier(this.vikingArmy)
-    //compute damage
-    console.log("attacker",attacker)
-    let result = damaged.receiveDamage(attacker.strength)
+  }
+
+  vikingAttack() {
+    //attack the saxon Army with the Viking army
+    let res = attack(this.saxonArmy, this.vikingArmy);
 
     //clean the battlefield
-    this.saxonArmy = this.saxonArmy.filter(x=> x.health>0)
-    console.log("saxon after viking attack",this.saxonArmy)
-    return result
-    }
-  
-  };
-  saxonAttack(){
-    if(this.vikingArmy.length > 0 && this.saxonArmy.length > 0){
-    //a saxon attack is a random soldier from the viking army
-    let damaged = randomSoldier(this.vikingArmy)
-    //receiving an attack from a random soldier of the saxon army
-    let attacker = randomSoldier(this.saxonArmy)
-    //compute damage 
-    let result1 = damaged.receiveDamage(attacker.strength)
+    this.saxonArmy = removeDead(this.saxonArmy);
 
-
-    //clean the battlefield (a dead viking should not reply back)
-    this.vikingArmy = this.vikingArmy.filter(x=> x.health>0)
-    console.log("saxon after viking attack",this.saxonArmy)
-
-
-
-
-    return result1
+    return res;
   }
-  
-  };
-  showStatus(){
- 
-    if (this.saxonArmy.length === 0){return 'Vikings have won the war of the century!'}
-    else if (this.vikingArmy.length === 0){return "Saxons have fought for their lives and survived another day..."}
-    else return 'Vikings and Saxons are still in the thick of battle.'
-  };
 
+  saxonAttack() {
+    //attack the viking army with the saxon army
+    let res = attack(this.vikingArmy, this.saxonArmy);
+
+    //clean the battlefield
+    this.vikingArmy = removeDead(this.vikingArmy);
+
+    return res;
+  }
+
+  showStatus() {
+    if (this.saxonArmy.length === 0) {
+      return 'Vikings have won the war of the century!';
+    } else if (this.vikingArmy.length === 0) {
+      return 'Saxons have fought for their lives and survived another day...';
+    } else return 'Vikings and Saxons are still in the thick of battle.';
+  }
 }
 
 // The following is required to make unit tests work.
@@ -150,8 +134,7 @@ if (typeof module !== 'undefined') {
   module.exports = { Soldier, Viking, Saxon, War };
 }
 
-
-
+/*Test cases
 let viking, saxon, war;
 
 function generateViking() {
@@ -174,8 +157,6 @@ function generateSaxon() {
 }
 
 
-
-/*Test cases
 viking = generateViking();
 viking2 = generateViking2()
 saxon1 = generateSaxon();
@@ -213,4 +194,5 @@ console.log(war.showStatus())
 
 
 //console.log(war.vikingArmy)
+
 */
